@@ -12,6 +12,7 @@ import (
 
 	"github.com/RascleVictor/recon-engine/internal/api"
 	"github.com/RascleVictor/recon-engine/internal/config"
+	"github.com/RascleVictor/recon-engine/internal/plugin/executor"
 	"github.com/RascleVictor/recon-engine/internal/plugin/loader"
 	"github.com/RascleVictor/recon-engine/internal/plugin/registry"
 )
@@ -47,8 +48,13 @@ func main() {
 			)
 		}
 	}
+	dockerExecutor, err := executor.NewDockerExecutor()
+	if err != nil {
+		logger.Error("docker executor initialization failed", "error", err)
+		os.Exit(1)
+	}
 
-	router := api.NewRouter(pluginRegistry)
+	router := api.NewRouter(pluginRegistry, dockerExecutor)
 
 	address := fmt.Sprintf(
 		"%s:%d",
