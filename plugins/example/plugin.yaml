@@ -1,0 +1,27 @@
+
+apiVersion: recon.framework/v1
+
+plugin:
+  id: example
+  name: Example Plugin
+  version: 1.0.0
+  category: test
+  description: First plugin for Recon Engine
+
+runtime:
+  type: docker
+  image: alpine:3.21
+  command:
+    - echo
+    - "Recon Engine plugin loaded"
+  timeout: 30s
+
+inputs:
+  - name: message
+    type: string
+    required: true
+    default: "Hello Recon Engine"
+
+output:
+  format: text
+  source: stdout
