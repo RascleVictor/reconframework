@@ -48,6 +48,7 @@ func main() {
 			)
 		}
 	}
+
 	dockerExecutor, err := executor.NewDockerExecutor()
 	if err != nil {
 		logger.Error("docker executor initialization failed", "error", err)

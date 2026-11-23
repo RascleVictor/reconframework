@@ -6,7 +6,7 @@ plugin:
   name: Example Plugin
   version: 1.0.0
   category: test
-  description: First plugin for Recon Engine
+  description: Example plugin producing structured observations
 
 runtime:
   type: docker
@@ -14,15 +14,16 @@ runtime:
   command:
     - sh
     - -c
-    - 'printf "%s\n" "$RECON_INPUT_MESSAGE"'
+    - |
+      printf '[{"type":"subdomain","value":"%s","metadata":{"status":"discovered"}}]\n' "$RECON_INPUT_MESSAGE"
   timeout: 30s
 
 inputs:
   - name: message
     type: string
     required: true
-    default: "Hello Recon Engine"
+    default: "api.example.com"
 
 output:
-  format: text
+  format: json
   source: stdout
