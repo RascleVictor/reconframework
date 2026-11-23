@@ -12,8 +12,9 @@ runtime:
   type: docker
   image: alpine:3.21
   command:
-    - echo
-    - "Recon Engine plugin loaded"
+    - sh
+    - -c
+    - 'printf "%s\n" "$RECON_INPUT_MESSAGE"'
   timeout: 30s
 
 inputs:

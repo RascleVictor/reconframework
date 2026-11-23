@@ -5,10 +5,12 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"os"
 
 	"github.com/RascleVictor/recon-engine/internal/plugin/executor"
+	"github.com/RascleVictor/recon-engine/internal/plugin/inputs"
 	"github.com/RascleVictor/recon-engine/internal/plugin/registry"
 )
 
@@ -76,7 +78,38 @@ func (h *PluginHandler) Execute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.executor.Execute(r.Context(), plugin)
+	var provided map[string]any
+
+	if r.Body != nil {
+		defer r.Body.Close()
+
+		decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 64*1024))
+		decoder.UseNumber()
+
+		if err := decoder.Decode(&provided); err != nil {
+			http.Error(w, "invalid JSON request body", http.StatusBadRequest)
+			return
+		}
+
+		// Refuse les documents JSON contenant plusieurs valeurs.
+		var extra any
+		if err := decoder.Decode(&extra); err != io.EOF {
+			http.Error(w, "request body must contain one JSON object", http.StatusBadRequest)
+			return
+		}
+	}
+
+	if provided == nil {
+		provided = make(map[string]any)
+	}
+
+	resolved, err := inputs.Resolve(plugin.Inputs, provided)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := h.executor.Execute(r.Context(), plugin, resolved)
 
 	w.Header().Set("Content-Type", "application/json")
 
